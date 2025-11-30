@@ -9,7 +9,8 @@ add_library(Logger::logger ALIAS logger)
 
 target_include_directories(logger
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/api>   # твои заголовки
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>       # родитель для spdlog/
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/api>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
         $<INSTALL_INTERFACE:api>
 )
