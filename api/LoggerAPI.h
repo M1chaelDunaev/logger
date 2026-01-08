@@ -3,6 +3,8 @@
 
 #include "logger/src/Logger.h"
 
+#define LOGGER_INIT logger::root::Logger::init()
+
 #define LOG_INFO    logger::root::Logger( spdlog::level::info,      { __FILE__, __LINE__, SPDLOG_FUNCTION } )
 #define LOG_WARN    logger::root::Logger( spdlog::level::warn,      { __FILE__, __LINE__, SPDLOG_FUNCTION } )
 #define LOG_ERROR   logger::root::Logger( spdlog::level::err,       { __FILE__, __LINE__, SPDLOG_FUNCTION } )
@@ -19,7 +21,12 @@
 
 
 namespace logger {
-namespace setting {
+namespace settings {
+
+void setLogFile( const std::string & logFile )
+{
+    logger::root::Logger::setLogFile( logFile );
+}
 
 }
 }

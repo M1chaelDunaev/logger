@@ -2,8 +2,10 @@
 #define LOGGER_H
 
 #include <type_traits>
+#include <string_view>
 #include <sstream>
 #include <memory>
+#include <cstdio>
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -43,12 +45,14 @@ public:
         if( initialized_ ) return;
 
         constexpr std::string_view defaultPattern = "[%H:%M:%S.%e %s:%#][%^%l%$] %v";
+        constexpr std::string_view defaultLogFile = "logs/app.log";
         try
         {
             auto consoleSink = std::make_shared< spdlog::sinks::stdout_color_sink_mt >();
             consoleSink->set_pattern( defaultPattern.data() );
 
-            auto fileSink = std::make_shared< spdlog::sinks::basic_file_sink_mt >( "logs/app.log", true );
+            const std::string logFile = logFile_.empty() ? std::string( defaultLogFile ) : logFile_;
+            auto fileSink = std::make_shared< spdlog::sinks::basic_file_sink_mt >( logFile, true );
             fileSink->set_pattern( defaultPattern.data() );
 
             spdlog::sinks_init_list sinkList{ consoleSink, fileSink };
@@ -58,16 +62,26 @@ public:
 
             mtLogger_ = std::make_shared< spdlog::logger >( "mt_logger", sinkList.begin(), sinkList.end() );
             mtLogger_->set_level( spdlog::level::trace );
-
+            initialized_ = true;
         }
         catch( const std::exception & e )
         {
-
+            std::fprintf( stderr, "Exception during logger initialization: %s\n", e.what() );
         }
         catch (...)
         {
-
+            std::fprintf( stderr, "Unknown exception during logger initialization\n" );
         }
+    }
+
+    static void setLogFile( const std::string & file )
+    {
+        if( initialized_ )
+        {
+            std::fprintf( stderr, "Attempt to change log file after logger initialization\n" );
+            return;
+        }
+        logFile_ = file;
     }
 
     template < typename T >
@@ -131,36 +145,36 @@ public:
             }
 
             std::shared_ptr< spdlog::logger > & targetLogger = useMt_ ? mtLogger_ : stLogger_;
-
-            if( level_ < spdlog::level::level_enum::info || level_ >= spdlog::level::level_enum::n_levels )
+            if ( !targetLogger )
             {
-                targetLogger->log( loc_, spdlog::level::level_enum::err, "" );
+                std::fprintf( stderr, "Logger not initialized\n" );
                 return;
             }
 
             targetLogger->log( loc_, level_, stream_.str() );
+            targetLogger->flush();
         }
         catch( const std::exception & e )
         {
-
+            std::fprintf( stderr, "Exception during logging: %s\n", e.what() );
         }
         catch( ... )
         {
-
+            std::fprintf( stderr, "Unknown exception during logging\n" );
         }
     }
 
 private:
 
     inline static bool initialized_ = false;
+    inline static std::shared_ptr< spdlog::logger > stLogger_;
+    inline static std::shared_ptr< spdlog::logger > mtLogger_;
+    inline static std::string logFile_;
 
     spdlog::level::level_enum level_;
     spdlog::source_loc loc_;
     std::ostringstream stream_;
     bool useMt_;
-
-    inline static std::shared_ptr< spdlog::logger > stLogger_;
-    inline static std::shared_ptr< spdlog::logger > mtLogger_;
 };
 
 } // root
