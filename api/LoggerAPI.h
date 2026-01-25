@@ -23,7 +23,7 @@
 namespace logger {
 namespace settings {
 
-void setLogFile( const std::string & logFile )
+inline void setLogFile( const std::string & logFile )
 {
     logger::root::Logger::setLogFile( logFile );
 }
