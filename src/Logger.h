@@ -58,10 +58,10 @@ public:
             spdlog::sinks_init_list sinkList{ consoleSink, fileSink };
 
             stLogger_ = std::make_shared< spdlog::logger >( "st_logger", sinkList.begin(), sinkList.end());
-            stLogger_->set_level( spdlog::level::trace );
+            stLogger_->set_level( configuredLevel_ );
 
             mtLogger_ = std::make_shared< spdlog::logger >( "mt_logger", sinkList.begin(), sinkList.end() );
-            mtLogger_->set_level( spdlog::level::trace );
+            mtLogger_->set_level( configuredLevel_ );
             initialized_ = true;
         }
         catch( const std::exception & e )
@@ -82,6 +82,13 @@ public:
             return;
         }
         logFile_ = file;
+    }
+
+    static void setLevel( spdlog::level::level_enum level )
+    {
+        configuredLevel_ = level;
+        if( stLogger_ ) stLogger_->set_level( level );
+        if( mtLogger_ ) mtLogger_->set_level( level );
     }
 
     template < typename T >
@@ -170,6 +177,7 @@ private:
     inline static std::shared_ptr< spdlog::logger > stLogger_;
     inline static std::shared_ptr< spdlog::logger > mtLogger_;
     inline static std::string logFile_;
+    inline static spdlog::level::level_enum configuredLevel_ = spdlog::level::info;
 
     spdlog::level::level_enum level_;
     spdlog::source_loc loc_;

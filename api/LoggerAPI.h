@@ -28,6 +28,13 @@ inline void setLogFile( const std::string & logFile )
     logger::root::Logger::setLogFile( logFile );
 }
 
+inline void setDebugEnabled( bool enabled )
+{
+    logger::root::Logger::setLevel(
+        enabled ? spdlog::level::debug : spdlog::level::info
+    );
+}
+
 }
 }
 
